@@ -8,6 +8,8 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 private const val TAG = "MainActivity"
 
@@ -26,8 +28,12 @@ class MainActivity : AppCompatActivity() {
         Question(R.string.question_americas, true),
         Question(R.string.question_asia, true)
     )
-
+    private var visiStatus = mutableListOf(
+        View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE
+    )
     private var currentIndex = 0
+    private var score = 0
+    private var answered = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,17 +52,18 @@ class MainActivity : AppCompatActivity() {
 
         falseButton.setOnClickListener { view: View ->
             checkAnswer(false)
-
         }
 
         nextButton.setOnClickListener {
             currentIndex = (currentIndex + 1) % questionBank.size
             updateQuestion()
+            setTrueFalseButtonVis()
         }
 
         prevButton.setOnClickListener {
             currentIndex = (currentIndex + (questionBank.size - 1)) % questionBank.size
             updateQuestion()
+            setTrueFalseButtonVis()
         }
 
         updateQuestion()
@@ -95,10 +102,29 @@ class MainActivity : AppCompatActivity() {
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = questionBank[currentIndex].answer
         val messageResId = if (userAnswer == correctAnswer) {
+            score++
             R.string.correct_toast
         } else {
             R.string.incorrect_toast
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
+        visiStatus[currentIndex] = View.INVISIBLE
+        setTrueFalseButtonVis()
+        answered++
+        if (answered == questionBank.size) {
+            showScore()
+        }
+    }
+
+    private fun setTrueFalseButtonVis() {
+        trueButton.setVisibility(visiStatus[currentIndex]);
+        falseButton.setVisibility(visiStatus[currentIndex]);
+    }
+
+    private fun showScore() {
+        val format = DecimalFormat("0.#")
+        format.roundingMode = RoundingMode.HALF_UP
+        val s = format.format(score * 1.0 / questionBank.size * 100)
+        Toast.makeText(this, "Your total score is " + s, Toast.LENGTH_LONG).show()
     }
 }
