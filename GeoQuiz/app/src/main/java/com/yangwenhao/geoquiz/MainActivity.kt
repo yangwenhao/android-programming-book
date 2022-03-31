@@ -14,6 +14,11 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 
 private const val TAG = "MainActivity"
+private const val KEY_INDEX = "index"
+private const val KEY_VIS_STATUS = "visStatus"
+private const val KEY_SCORE = "score"
+private const val KEY_ANSWERED = "answered"
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var trueButton: Button
@@ -31,11 +36,23 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onCreate(Bundle?) called")
         setContentView(R.layout.activity_main)
 
+        val currentIndex = savedInstanceState?.getInt(KEY_INDEX, 0) ?: 0
+        val visStatus = savedInstanceState?.getIntArray(KEY_VIS_STATUS) ?: intArrayOf(
+            View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE
+        )
+        val answered = savedInstanceState?.getInt(KEY_ANSWERED, 0) ?: 0
+        val score = savedInstanceState?.getInt(KEY_SCORE, 0) ?: 0
+
+        quizViewModel.currentIndex = currentIndex
+        quizViewModel.visStatus = visStatus
+        quizViewModel.answered = answered
+        quizViewModel.score = score
+
         trueButton = findViewById(R.id.true_button)
         falseButton = findViewById(R.id.false_button)
         nextButton = findViewById(R.id.next_button)
         prevButton = findViewById(R.id.prev_button)
-        questionTextView = findViewById(R.id.question_text_view)
+        // questionTextView = findViewById(R.id.question_text_view)
 
         setTrueFalseButtonVis()
 
@@ -77,6 +94,15 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause() called")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.i(TAG, "onSaveInstanceState")
+        outState.putInt(KEY_INDEX, quizViewModel.currentIndex)
+        outState.putIntArray(KEY_VIS_STATUS, quizViewModel.visStatus)
+        outState.putInt(KEY_SCORE, quizViewModel.score)
+        outState.putInt(KEY_ANSWERED, quizViewModel.answered)
     }
 
     override fun onStop() {

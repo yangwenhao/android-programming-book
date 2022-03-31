@@ -19,7 +19,7 @@ class QuizViewModel : ViewModel() {
         Question(R.string.question_asia, true)
     )
 
-    private val visStatus = mutableListOf(
+    var visStatus = intArrayOf(
         View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE
     )
     var score = 0
@@ -51,5 +51,6 @@ class QuizViewModel : ViewModel() {
     fun getButVis(): Int {
         return visStatus[currentIndex]
     }
+
 
 }
