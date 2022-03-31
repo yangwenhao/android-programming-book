@@ -8,6 +8,8 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -20,20 +22,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prevButton: ImageButton
     private lateinit var questionTextView: TextView
 
-    private val questionBank = listOf(
-        Question(R.string.question_australia, true),
-        Question(R.string.question_oceans, true),
-        Question(R.string.question_mideast, false),
-        Question(R.string.question_africa, false),
-        Question(R.string.question_americas, true),
-        Question(R.string.question_asia, true)
-    )
-    private var visiStatus = mutableListOf(
-        View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE
-    )
-    private var currentIndex = 0
-    private var score = 0
-    private var answered = 0
+    private val quizViewModel : QuizViewModel by lazy {
+        ViewModelProvider(this).get(QuizViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,22 +37,26 @@ class MainActivity : AppCompatActivity() {
         prevButton = findViewById(R.id.prev_button)
         questionTextView = findViewById(R.id.question_text_view)
 
+        setTrueFalseButtonVis()
+
         trueButton.setOnClickListener { view: View ->
+            quizViewModel.answer()
             checkAnswer(true)
         }
 
         falseButton.setOnClickListener { view: View ->
+            quizViewModel.answer()
             checkAnswer(false)
         }
 
         nextButton.setOnClickListener {
-            currentIndex = (currentIndex + 1) % questionBank.size
+            quizViewModel.moveToNext()
             updateQuestion()
             setTrueFalseButtonVis()
         }
 
         prevButton.setOnClickListener {
-            currentIndex = (currentIndex + (questionBank.size - 1)) % questionBank.size
+            quizViewModel.moveToPrev()
             updateQuestion()
             setTrueFalseButtonVis()
         }
@@ -95,36 +90,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateQuestion() {
-        val questionTextResId = questionBank[currentIndex].textResId
+        val questionTextResId = quizViewModel.currentQuuestionText
         questionTextView.setText(questionTextResId)
     }
 
     private fun checkAnswer(userAnswer: Boolean) {
-        val correctAnswer = questionBank[currentIndex].answer
+        val correctAnswer = quizViewModel.currentQuestionAnswer
         val messageResId = if (userAnswer == correctAnswer) {
-            score++
+            quizViewModel.addScore()
             R.string.correct_toast
         } else {
             R.string.incorrect_toast
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
-        visiStatus[currentIndex] = View.INVISIBLE
+
         setTrueFalseButtonVis()
-        answered++
-        if (answered == questionBank.size) {
+
+        if (quizViewModel.answered == quizViewModel.questionCount) {
             showScore()
         }
     }
 
     private fun setTrueFalseButtonVis() {
-        trueButton.setVisibility(visiStatus[currentIndex]);
-        falseButton.setVisibility(visiStatus[currentIndex]);
+        trueButton.setVisibility(quizViewModel.getButVis());
+        falseButton.setVisibility(quizViewModel.getButVis());
     }
 
     private fun showScore() {
         val format = DecimalFormat("0.#")
         format.roundingMode = RoundingMode.HALF_UP
-        val s = format.format(score * 1.0 / questionBank.size * 100)
-        Toast.makeText(this, "Your total score is " + s, Toast.LENGTH_LONG).show()
+        val s = format.format(quizViewModel.score * 1.0 / quizViewModel.questionCount * 100)
+        Toast.makeText(this, "Your total score is $s", Toast.LENGTH_LONG).show()
     }
 }
