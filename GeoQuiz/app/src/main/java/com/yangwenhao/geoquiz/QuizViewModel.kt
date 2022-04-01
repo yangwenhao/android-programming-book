@@ -9,7 +9,7 @@ private const val TAG = "QuizViewModel"
 class QuizViewModel : ViewModel() {
 
     var currentIndex = 0
-    var isCheater = false
+    var cheaterSet = hashSetOf<Int>()
 
     private val questionBank = listOf(
         Question(R.string.question_australia, true),
@@ -53,5 +53,11 @@ class QuizViewModel : ViewModel() {
         return visStatus[currentIndex]
     }
 
+    fun addCheater(index: Int) {
+        cheaterSet.add(index)
+    }
 
+    fun isCheater(index: Int) : Boolean {
+        return cheaterSet.contains(index)
+    }
 }

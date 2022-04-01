@@ -1,7 +1,6 @@
 package com.yangwenhao.geoquiz
 
 import android.app.Activity
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -10,17 +9,19 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import java.util.*
+import kotlin.collections.HashSet
 
 private const val TAG = "MainActivity"
 private const val KEY_INDEX = "index"
 private const val KEY_VIS_STATUS = "visStatus"
 private const val KEY_SCORE = "score"
 private const val KEY_ANSWERED = "answered"
+private const val KEY_CHEAT_INDEX = "cheatIndex"
 private const val REQUEST_CODE_CHEAT = 0
 
 class MainActivity : AppCompatActivity() {
@@ -46,11 +47,13 @@ class MainActivity : AppCompatActivity() {
         )
         val answered = savedInstanceState?.getInt(KEY_ANSWERED, 0) ?: 0
         val score = savedInstanceState?.getInt(KEY_SCORE, 0) ?: 0
+        val cheatIndexArray = savedInstanceState?.getIntArray(KEY_CHEAT_INDEX) ?: intArrayOf()
 
         quizViewModel.currentIndex = currentIndex
         quizViewModel.visStatus = visStatus
         quizViewModel.answered = answered
         quizViewModel.score = score
+        quizViewModel.cheaterSet = cheatIndexArray.toCollection(HashSet())
 
         trueButton = findViewById(R.id.true_button)
         falseButton = findViewById(R.id.false_button)
@@ -62,12 +65,15 @@ class MainActivity : AppCompatActivity() {
         val resultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 if (it.resultCode == Activity.RESULT_OK) {
-                    quizViewModel.isCheater =
+                    val isCheater =
                         it.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+                    if (isCheater) {
+                        quizViewModel.addCheater(quizViewModel.currentIndex)
+                    }
                 }
             }
 
-        setTrueFalseButtonVis()
+        setButtonVis()
 
         trueButton.setOnClickListener {
             quizViewModel.answer()
@@ -82,7 +88,7 @@ class MainActivity : AppCompatActivity() {
         nextButton.setOnClickListener {
             quizViewModel.moveToNext()
             updateQuestion()
-            setTrueFalseButtonVis()
+            setButtonVis()
         }
         cheatButton.setOnClickListener {
             val answerIsTrue = quizViewModel.currentQuestionAnswer
@@ -92,7 +98,7 @@ class MainActivity : AppCompatActivity() {
         prevButton.setOnClickListener {
             quizViewModel.moveToPrev()
             updateQuestion()
-            setTrueFalseButtonVis()
+            setButtonVis()
         }
 
         updateQuestion()
@@ -120,6 +126,7 @@ class MainActivity : AppCompatActivity() {
         outState.putIntArray(KEY_VIS_STATUS, quizViewModel.visStatus)
         outState.putInt(KEY_SCORE, quizViewModel.score)
         outState.putInt(KEY_ANSWERED, quizViewModel.answered)
+        outState.putIntArray(KEY_CHEAT_INDEX, quizViewModel.cheaterSet.toIntArray())
     }
 
     override fun onStop() {
@@ -140,7 +147,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
         val messageResId = when {
-            quizViewModel.isCheater -> R.string.judgment_toast
+            quizViewModel.isCheater(quizViewModel.currentIndex) -> R.string.judgment_toast
             userAnswer == correctAnswer -> {
                 quizViewModel.addScore()
                 R.string.correct_toast
@@ -149,16 +156,18 @@ class MainActivity : AppCompatActivity() {
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
 
-        setTrueFalseButtonVis()
+        setButtonVis()
 
         if (quizViewModel.answered == quizViewModel.questionCount) {
             showScore()
         }
     }
 
-    private fun setTrueFalseButtonVis() {
-        trueButton.visibility = quizViewModel.getButVis()
-        falseButton.visibility = quizViewModel.getButVis()
+    private fun setButtonVis() {
+        val butVis = quizViewModel.getButVis()
+        trueButton.visibility = butVis
+        falseButton.visibility = butVis
+        cheatButton.visibility = butVis
     }
 
     private fun showScore() {

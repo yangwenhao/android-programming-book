@@ -8,7 +8,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 
-const val EXTRA_ANSWER_SHOWN = "com.yangwenhao.geoquiz.answer_shown"
+const val EXTRA_ANSWER_SHOWN = "com.yangwenhao.geoquiz.answer"
 private const val EXTRA_ANSWER_IS_TRUE = "com.yangwenhao.geoquiz.answer_is_true"
 
 class CheatActivity : AppCompatActivity() {
