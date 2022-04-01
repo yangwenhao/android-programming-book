@@ -1,5 +1,6 @@
 package com.yangwenhao.geoquiz
 
+import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,8 +10,9 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -57,14 +59,22 @@ class MainActivity : AppCompatActivity() {
         cheatButton = findViewById(R.id.cheat_button)
         questionTextView = findViewById(R.id.question_text_view)
 
+        val resultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (it.resultCode == Activity.RESULT_OK) {
+                    quizViewModel.isCheater =
+                        it.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+                }
+            }
+
         setTrueFalseButtonVis()
 
-        trueButton.setOnClickListener { view: View ->
+        trueButton.setOnClickListener {
             quizViewModel.answer()
             checkAnswer(true)
         }
 
-        falseButton.setOnClickListener { view: View ->
+        falseButton.setOnClickListener {
             quizViewModel.answer()
             checkAnswer(false)
         }
@@ -77,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         cheatButton.setOnClickListener {
             val answerIsTrue = quizViewModel.currentQuestionAnswer
             val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
-            startActivityForResult(intent, REQUEST_CODE_CHEAT)
+            resultLauncher.launch(intent)
         }
         prevButton.setOnClickListener {
             quizViewModel.moveToPrev()
@@ -129,11 +139,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
-        val messageResId = if (userAnswer == correctAnswer) {
-            quizViewModel.addScore()
-            R.string.correct_toast
-        } else {
-            R.string.incorrect_toast
+        val messageResId = when {
+            quizViewModel.isCheater -> R.string.judgment_toast
+            userAnswer == correctAnswer -> {
+                quizViewModel.addScore()
+                R.string.correct_toast
+            }
+            else -> R.string.incorrect_toast
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
 
