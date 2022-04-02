@@ -10,10 +10,10 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.ViewModelProvider
 import java.math.RoundingMode
 import java.text.DecimalFormat
-import java.util.*
 import kotlin.collections.HashSet
 
 private const val TAG = "MainActivity"
@@ -23,6 +23,7 @@ private const val KEY_SCORE = "score"
 private const val KEY_ANSWERED = "answered"
 private const val KEY_CHEAT_INDEX = "cheatIndex"
 private const val REQUEST_CODE_CHEAT = 0
+private const val CHEAT_MAX_COUNT = 3
 
 class MainActivity : AppCompatActivity() {
     private lateinit var trueButton: Button
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prevButton: ImageButton
     private lateinit var cheatButton: Button
     private lateinit var questionTextView: TextView
+    private lateinit var remainingCheatTimesTextView: TextView
 
     private val quizViewModel : QuizViewModel by lazy {
         ViewModelProvider(this).get(QuizViewModel::class.java)
@@ -61,18 +63,9 @@ class MainActivity : AppCompatActivity() {
         prevButton = findViewById(R.id.prev_button)
         cheatButton = findViewById(R.id.cheat_button)
         questionTextView = findViewById(R.id.question_text_view)
+        remainingCheatTimesTextView = findViewById(R.id.remaining_cheat_times_text_view)
 
-        val resultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == Activity.RESULT_OK) {
-                    val isCheater =
-                        it.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
-                    if (isCheater) {
-                        quizViewModel.addCheater(quizViewModel.currentIndex)
-                    }
-                }
-            }
-
+        remainingCheatTimesTextView.setText("Remaining cheat times: " + (CHEAT_MAX_COUNT - quizViewModel.cheatCount()))
         setButtonVis()
 
         trueButton.setOnClickListener {
@@ -90,10 +83,27 @@ class MainActivity : AppCompatActivity() {
             updateQuestion()
             setButtonVis()
         }
+
+        val resultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (it.resultCode == Activity.RESULT_OK) {
+                    val isCheater =
+                        it.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+                    if (isCheater) {
+                        quizViewModel.addCheater(quizViewModel.currentIndex)
+                        if (quizViewModel.cheatCount() >= CHEAT_MAX_COUNT) {
+                            cheatButton.visibility = View.INVISIBLE
+                        }
+                        remainingCheatTimesTextView.setText("Remaining cheat times: " + (CHEAT_MAX_COUNT - quizViewModel.cheatCount()))
+                    }
+                }
+            }
+
         cheatButton.setOnClickListener {
             val answerIsTrue = quizViewModel.currentQuestionAnswer
             val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
-            resultLauncher.launch(intent)
+            val options = ActivityOptionsCompat.makeClipRevealAnimation(it,0,0, it.width, it.height)
+            resultLauncher.launch(intent, options)
         }
         prevButton.setOnClickListener {
             quizViewModel.moveToPrev()
@@ -167,7 +177,8 @@ class MainActivity : AppCompatActivity() {
         val butVis = quizViewModel.getButVis()
         trueButton.visibility = butVis
         falseButton.visibility = butVis
-        cheatButton.visibility = butVis
+        cheatButton.visibility = if (butVis == View.VISIBLE && quizViewModel.cheatCount() >= CHEAT_MAX_COUNT) View.INVISIBLE else butVis
+        remainingCheatTimesTextView.visibility = butVis
     }
 
     private fun showScore() {

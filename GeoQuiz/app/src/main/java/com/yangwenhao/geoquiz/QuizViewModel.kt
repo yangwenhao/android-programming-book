@@ -60,4 +60,8 @@ class QuizViewModel : ViewModel() {
     fun isCheater(index: Int) : Boolean {
         return cheaterSet.contains(index)
     }
+
+    fun cheatCount() : Int {
+        return cheaterSet.count()
+    }
 }
