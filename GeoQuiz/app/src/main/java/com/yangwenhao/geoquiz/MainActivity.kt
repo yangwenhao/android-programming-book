@@ -156,12 +156,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
+        if (userAnswer == correctAnswer) {
+            quizViewModel.addScore()
+        }
         val messageResId = when {
             quizViewModel.isCheater(quizViewModel.currentIndex) -> R.string.judgment_toast
-            userAnswer == correctAnswer -> {
-                quizViewModel.addScore()
-                R.string.correct_toast
-            }
+            userAnswer == correctAnswer -> R.string.correct_toast
             else -> R.string.incorrect_toast
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
