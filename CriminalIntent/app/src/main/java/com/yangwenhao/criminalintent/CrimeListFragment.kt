@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -52,9 +53,13 @@ class CrimeListFragment : Fragment() {
         private lateinit var crime: Crime
         private val titleTextView: TextView = itemView.findViewById(R.id.crime_title)
         private val dateTextView: TextView = itemView.findViewById(R.id.crime_date)
+        private val linkPoliceButton: Button? = itemView.findViewById(R.id.link_police)
 
         init {
             itemView.setOnClickListener(this)
+            linkPoliceButton?.setOnClickListener {
+                Toast.makeText(context,"Calling 110...", Toast.LENGTH_SHORT).show()
+            }
         }
 
         fun bind(crime: Crime) {
@@ -71,7 +76,11 @@ class CrimeListFragment : Fragment() {
     private inner class CrimeAdapter(var crimes: List<Crime>) : RecyclerView.Adapter<CrimeHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
-            val view = layoutInflater.inflate(R.layout.list_item_crime, parent, false)
+            val view =
+                if (viewType == ViewType.REGULAR_VIEW)
+                    layoutInflater.inflate(R.layout.list_item_crime, parent, false)
+                else
+                    layoutInflater.inflate(R.layout.list_item_crime_police, parent, false)
             return CrimeHolder(view)
         }
 
@@ -80,8 +89,18 @@ class CrimeListFragment : Fragment() {
             holder.bind(crime)
         }
 
+        override fun getItemViewType(position: Int): Int {
+            val crime = crimes[position]
+            return if (crime.requiresPolice) ViewType.POLICE_VIEW else ViewType.REGULAR_VIEW
+        }
+
         override fun getItemCount() = crimes.size
 
+    }
+
+    object ViewType {
+        const val REGULAR_VIEW = 1
+        const val POLICE_VIEW = 2
     }
 
     companion object {

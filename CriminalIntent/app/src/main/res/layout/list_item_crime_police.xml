@@ -15,5 +15,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Crime Date"/>
-
+    <Button
+        android:id="@+id/link_police"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Link Police"/>
 </LinearLayout>
