@@ -9,5 +9,5 @@ import com.yangwenhao.criminalintent.Crime
 @TypeConverters(CrimeTypeConverters::class)
 abstract class CrimeDatabase : RoomDatabase() {
 
-    abstract  fun crimeDao(): CrimeDao
+    abstract fun crimeDao(): CrimeDao
 }
