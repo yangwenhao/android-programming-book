@@ -7,14 +7,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.*
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
 
@@ -107,7 +106,24 @@ class CrimeListFragment : Fragment() {
         }
     }
 
-    private inner class CrimeAdapter(var crimes: List<Crime>) : RecyclerView.Adapter<CrimeHolder>() {
+
+    private inner class CrimeAdapter(var crimes: List<Crime>, diffCallback: DiffUtil.ItemCallback<Crime>) : ListAdapter<Crime, CrimeHolder>(diffCallback) {
+
+        private lateinit var diffCallback: DiffUtil.ItemCallback<Crime>
+
+        init {
+            diffCallback = object: DiffUtil.ItemCallback<Crime>() {
+                override fun areItemsTheSame(oldItem: Crime, newItem: Crime): Boolean {
+                    TODO("Not yet implemented")
+                }
+
+                override fun areContentsTheSame(oldItem: Crime, newItem: Crime): Boolean {
+                    TODO("Not yet implemented")
+                }
+
+            }
+        }
+        constructor(crimes: List<Crime>) : this(crimes, diffCallback)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
             val view =
@@ -129,8 +145,8 @@ class CrimeListFragment : Fragment() {
         }
 
         override fun getItemCount() = crimes.size
-
     }
+
 
     object ViewType {
         const val REGULAR_VIEW = 1
@@ -138,8 +154,10 @@ class CrimeListFragment : Fragment() {
     }
 
     companion object {
+
         fun newInstance(): CrimeListFragment {
             return CrimeListFragment()
         }
     }
+
 }
