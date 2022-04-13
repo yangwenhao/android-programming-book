@@ -7,11 +7,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -28,7 +31,7 @@ class CrimeListFragment : Fragment() {
     private var callbacks: Callbacks? = null
 
     private lateinit var crimeRecyclerView: RecyclerView
-    private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
+    private var adapter: CrimeAdapter = CrimeAdapter(emptyList())
 
     private val crimeListViewModel: CrimeListViewModel by lazy {
         ViewModelProvider(this).get(CrimeListViewModel::class.java)
@@ -71,6 +74,7 @@ class CrimeListFragment : Fragment() {
 
     private fun updateUI(crimes: List<Crime>) {
         adapter = CrimeAdapter(crimes)
+        adapter.submitList(crimes)
         crimeRecyclerView.adapter = adapter
     }
 
@@ -109,21 +113,15 @@ class CrimeListFragment : Fragment() {
 
     private inner class CrimeAdapter(var crimes: List<Crime>, diffCallback: DiffUtil.ItemCallback<Crime>) : ListAdapter<Crime, CrimeHolder>(diffCallback) {
 
-        private lateinit var diffCallback: DiffUtil.ItemCallback<Crime>
-
-        init {
-            diffCallback = object: DiffUtil.ItemCallback<Crime>() {
-                override fun areItemsTheSame(oldItem: Crime, newItem: Crime): Boolean {
-                    TODO("Not yet implemented")
-                }
-
-                override fun areContentsTheSame(oldItem: Crime, newItem: Crime): Boolean {
-                    TODO("Not yet implemented")
-                }
-
+        constructor(crimes: List<Crime>) : this(crimes, object: DiffUtil.ItemCallback<Crime>() {
+            override fun areItemsTheSame(oldItem: Crime, newItem: Crime): Boolean {
+                return oldItem.id == newItem.id
             }
-        }
-        constructor(crimes: List<Crime>) : this(crimes, diffCallback)
+
+            override fun areContentsTheSame(oldItem: Crime, newItem: Crime): Boolean {
+                return oldItem.equals(newItem)
+            }
+        })
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
             val view =
