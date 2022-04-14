@@ -15,6 +15,8 @@ import java.util.*
 
 private const val ARG_CRIME_ID = "crime_id"
 private const val DIALOG_DATE = "DialogDate"
+private const val ARG_DATE = "date"
+private const val REQUEST_KEY = "DialogDate"
 
 class CrimeFragment : Fragment() {
 
@@ -47,15 +49,12 @@ class CrimeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        crimeDetailViewModel.crimeLiveData.observe(
-            viewLifecycleOwner,
-            androidx.lifecycle.Observer { crime ->
-                crime?.let {
-                    this.crime = crime
-                    updateUI()
-                }
+        crimeDetailViewModel.crimeLiveData.observe(viewLifecycleOwner) { crime ->
+            crime?.let {
+                this.crime = crime
+                updateUI()
             }
-        )
+        }
     }
 
     private fun updateUI() {
@@ -93,6 +92,13 @@ class CrimeFragment : Fragment() {
         dateButton.setOnClickListener {
             DatePickerFragment.newInstance(crime.date).apply {
                 show(parentFragmentManager, DIALOG_DATE)
+            }
+        }
+
+        parentFragmentManager.setFragmentResultListener(REQUEST_KEY, viewLifecycleOwner) { requestKey, result ->
+            if (requestKey == DIALOG_DATE) {
+                crime.date = result.getSerializable(ARG_DATE) as Date
+                updateUI()
             }
         }
     }

@@ -7,6 +7,7 @@ import androidx.fragment.app.DialogFragment
 import java.util.*
 
 private const val ARG_DATE = "date"
+private const val REQUEST_KEY = "DialogDate"
 
 class DatePickerFragment : DialogFragment() {
 
@@ -18,7 +19,14 @@ class DatePickerFragment : DialogFragment() {
         val initialMonth = calendar.get(Calendar.MONTH)
         val initialDay = calendar.get(Calendar.DAY_OF_MONTH)
 
-        return DatePickerDialog(requireContext(), null, initialYear, initialMonth, initialDay)
+        val dateListener = DatePickerDialog.OnDateSetListener {
+            _, year, month, day ->
+            val resultDate: Date = GregorianCalendar(year, month, day).time
+            parentFragmentManager.setFragmentResult(REQUEST_KEY, Bundle().apply {
+                putSerializable(ARG_DATE, resultDate)
+            })
+        }
+        return DatePickerDialog(requireContext(), dateListener, initialYear, initialMonth, initialDay)
     }
 
     companion object {
