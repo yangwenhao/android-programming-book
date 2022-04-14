@@ -31,7 +31,7 @@ class CrimeListFragment : Fragment() {
     private var callbacks: Callbacks? = null
 
     private lateinit var crimeRecyclerView: RecyclerView
-    private var adapter: CrimeAdapter = CrimeAdapter(emptyList())
+    private var adapter: CrimeAdapter = CrimeAdapter()
 
     private val crimeListViewModel: CrimeListViewModel by lazy {
         ViewModelProvider(this).get(CrimeListViewModel::class.java)
@@ -73,9 +73,9 @@ class CrimeListFragment : Fragment() {
     }
 
     private fun updateUI(crimes: List<Crime>) {
-        adapter = CrimeAdapter(crimes)
-        adapter.submitList(crimes)
-        crimeRecyclerView.adapter = adapter
+        crimeRecyclerView.adapter =  CrimeAdapter().apply {
+            submitList(crimes)
+        }
     }
 
     private inner class CrimeHolder(view: View) : RecyclerView.ViewHolder(view),
@@ -111,15 +111,15 @@ class CrimeListFragment : Fragment() {
     }
 
 
-    private inner class CrimeAdapter(var crimes: List<Crime>, diffCallback: DiffUtil.ItemCallback<Crime>) : ListAdapter<Crime, CrimeHolder>(diffCallback) {
+    private inner class CrimeAdapter : ListAdapter<Crime, CrimeHolder> {
 
-        constructor(crimes: List<Crime>) : this(crimes, object: DiffUtil.ItemCallback<Crime>() {
+        constructor() : super(object: DiffUtil.ItemCallback<Crime>() {
             override fun areItemsTheSame(oldItem: Crime, newItem: Crime): Boolean {
                 return oldItem.id == newItem.id
             }
 
             override fun areContentsTheSame(oldItem: Crime, newItem: Crime): Boolean {
-                return oldItem.equals(newItem)
+                return oldItem == newItem
             }
         })
 
@@ -133,16 +133,15 @@ class CrimeListFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
-            val crime = crimes[position]
+            val crime = getItem(position)
             holder.bind(crime)
         }
 
         override fun getItemViewType(position: Int): Int {
-            val crime = crimes[position]
+            val crime = getItem(position)
             return if (crime.requiresPolice) ViewType.POLICE_VIEW else ViewType.REGULAR_VIEW
         }
 
-        override fun getItemCount() = crimes.size
     }
 
 
