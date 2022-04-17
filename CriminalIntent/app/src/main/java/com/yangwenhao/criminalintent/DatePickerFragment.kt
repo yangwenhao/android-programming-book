@@ -22,7 +22,7 @@ class DatePickerFragment : DialogFragment() {
         val dateListener = DatePickerDialog.OnDateSetListener {
             _, year, month, day ->
             val resultDate: Date = GregorianCalendar(year, month, day).time
-            parentFragmentManager.setFragmentResult(REQUEST_KEY, Bundle().apply {
+            this.parentFragmentManager.setFragmentResult(REQUEST_KEY, Bundle().apply {
                 putSerializable(ARG_DATE, resultDate)
             })
         }
