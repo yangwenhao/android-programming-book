@@ -9,6 +9,7 @@
     <string name="new_crime">New Crime</string>
     <string name="toolbar_title">COOL TITLE</string>
     <string name="no_crime_text">There are no crime</string>
+    <string name="add_crime">ADD</string>
 </resources>
 
 

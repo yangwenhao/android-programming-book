@@ -27,8 +27,9 @@ class CrimeListFragment : Fragment() {
     }
 
     private var callbacks: Callbacks? = null
-
     private lateinit var crimeRecyclerView: RecyclerView
+    private lateinit var noCrimeText : TextView
+    private lateinit var addButton: Button
     private var adapter: CrimeAdapter = CrimeAdapter()
 
     private val crimeListViewModel: CrimeListViewModel by lazy {
@@ -52,6 +53,8 @@ class CrimeListFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
         crimeRecyclerView = view.findViewById(R.id.crime_recycler_view) as RecyclerView
+        addButton = view.findViewById(R.id.add_button)
+        noCrimeText = view.findViewById<TextView>(R.id.no_crime_text)
         crimeRecyclerView.layoutManager = LinearLayoutManager(context)
         crimeRecyclerView.adapter = adapter
         return view
@@ -64,10 +67,13 @@ class CrimeListFragment : Fragment() {
             Observer { crimes ->
                 crimes?.let {
                     Log.i(TAG, "Got crimes ${crimes.size}")
-                    updateUI(crimes)
+                    updateUI(view, crimes)
                 }
             }
         )
+        addButton.setOnClickListener {
+            addCrime()
+        }
     }
 
     override fun onDetach() {
@@ -83,19 +89,38 @@ class CrimeListFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.new_crime -> {
-                val crime = Crime()
-                crimeListViewModel.addCrime(crime)
-                callbacks?.onCrimeSelected(crime.id)
+                addCrime()
                 true
             }
             else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    private fun updateUI(crimes: List<Crime>) {
-        crimeRecyclerView.adapter =  CrimeAdapter().apply {
-            submitList(crimes)
+    private fun addCrime() {
+        val crime = Crime()
+        crimeListViewModel.addCrime(crime)
+        callbacks?.onCrimeSelected(crime.id)
+    }
+
+    private fun updateUI(view: View, crimes: List<Crime>) {
+        Log.i(TAG, "update UI...")
+        if (crimes.isEmpty()) {
+            noCrimeText.visibility = View.VISIBLE
+            addButton.visibility = View.VISIBLE
+            crimeRecyclerView.visibility = View.GONE
+        } else {
+            noCrimeText.visibility = View.GONE
+            addButton.visibility = View.GONE
+            crimeRecyclerView.visibility = View.VISIBLE
+            crimeRecyclerView.adapter =  CrimeAdapter().apply {
+                submitList(crimes)
+            }
         }
+//        noCrimeText.visibility = if (crimes.isEmpty()) View.VISIBLE else View.GONE
+//
+//        crimeRecyclerView.adapter =  CrimeAdapter().apply {
+//            submitList(crimes)
+//        }
     }
 
     private inner class CrimeHolder(view: View) : RecyclerView.ViewHolder(view),
