@@ -1,12 +1,16 @@
 package com.yangwenhao.criminalintent
 
 import android.os.Bundle
+
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+
 import java.util.*
 
 private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -16,6 +20,8 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
             val fragment = CrimeListFragment.newInstance()
             supportFragmentManager.beginTransaction().add(R.id.fragment_container, fragment).commit()
         }
+
+        setTitle(R.string.toolbar_title)
     }
 
     override fun onCrimeSelected(crimeId: UUID) {
