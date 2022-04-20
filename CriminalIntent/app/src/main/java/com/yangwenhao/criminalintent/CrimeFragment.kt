@@ -35,7 +35,27 @@ class CrimeFragment : Fragment() {
     private lateinit var dateButton: Button
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
-    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
+
+    private val resultLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == Activity.RESULT_OK && it.data != null) {
+            val contactUri: Uri? = it.data?.data
+            val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+            val cursor = contactUri?.let { uri ->
+                requireActivity().contentResolver.query(
+                    uri, queryFields, null, null, null)
+            }
+            cursor?.use {
+                if (it.count != 0) {
+                    it.moveToFirst()
+                    val suspect = it.getString(0)
+                    crime.suspect = suspect
+                    crimeDetailViewModel.saveCrime(crime)
+                    suspectButton.text = suspect
+                    crimeDetailViewModel.loadCrime(crime.id)
+                }
+            }
+        }
+    }
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this).get(CrimeDetailViewModel::class.java)
@@ -46,27 +66,6 @@ class CrimeFragment : Fragment() {
         crime = Crime()
         val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
         crimeDetailViewModel.loadCrime(crimeId)
-
-        resultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == Activity.RESULT_OK && it.data != null) {
-                    val contactUri: Uri? = it.data?.data
-                    val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
-                    val cursor = contactUri?.let { uri ->
-                        requireActivity().contentResolver.query(
-                            uri, queryFields, null, null, null)
-                    }
-                    cursor?.use {
-                        if (it.count != 0) {
-                            it.moveToFirst()
-                            val suspect = it.getString(0)
-                            this@CrimeFragment.crime.suspect = suspect
-                            crimeDetailViewModel.saveCrime(this@CrimeFragment.crime)
-                            suspectButton.text = suspect
-                        }
-                    }
-                }
-            }
     }
 
     override fun onCreateView(
