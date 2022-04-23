@@ -8,6 +8,7 @@ import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,6 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -26,6 +26,7 @@ private const val DIALOG_DATE = "DialogDate"
 private const val ARG_DATE = "date"
 private const val REQUEST_KEY = "DialogDate"
 private const val DATE_FORMAT = "EEE, MMM, dd"
+private const val TAG = "CrimeFragment"
 
 class CrimeFragment : Fragment() {
 
@@ -48,10 +49,7 @@ class CrimeFragment : Fragment() {
                 if (it.count != 0) {
                     it.moveToFirst()
                     val suspect = it.getString(0)
-                    crime.suspect = suspect
-                    crimeDetailViewModel.saveCrime(crime)
                     suspectButton.text = suspect
-                    crimeDetailViewModel.loadCrime(crime.id)
                 }
             }
         }
@@ -62,10 +60,12 @@ class CrimeFragment : Fragment() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.i(TAG, "onCreate...")
         super.onCreate(savedInstanceState)
         crime = Crime()
         val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
         crimeDetailViewModel.loadCrime(crimeId)
+
     }
 
     override fun onCreateView(
@@ -99,7 +99,9 @@ class CrimeFragment : Fragment() {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()
         }
-        if (crime.suspect.isNotEmpty()) {
+        if (suspectButton.text.toString() != getString(R.string.crime_suspect_text)) {
+            crime.suspect = suspectButton.text.toString()
+        } else if (crime.suspect.isNotEmpty()) {
             suspectButton.text = crime.suspect
         }
     }
@@ -107,7 +109,7 @@ class CrimeFragment : Fragment() {
     private fun getCrimeReport(): String {
         val solvedString = if (crime.isSolved) getString(R.string.crime_report_solved) else getString(R.string.crime_report_unsolved)
         val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
-        val suspect = if (crime.suspect.isBlank()) getString(R.string.crime_report_no_suspect) else getString(R.string.crime_report_subject)
+        val suspect = if (crime.suspect.isBlank()) getString(R.string.crime_report_no_suspect) else crime.suspect
         return getString(R.string.crime_report, crime.title, dateString, solvedString, suspect)
     }
 

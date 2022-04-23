@@ -64,4 +64,10 @@ class QuizViewModel : ViewModel() {
     fun cheatCount() : Int {
         return cheaterSet.count()
     }
+
+    fun setCurrentIndexTo(index: Int) {
+        if (index != currentIndex) {
+            currentIndex = index
+        }
+    }
 }

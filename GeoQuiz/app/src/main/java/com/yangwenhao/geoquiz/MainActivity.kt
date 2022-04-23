@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         val score = savedInstanceState?.getInt(KEY_SCORE, 0) ?: 0
         val cheatIndexArray = savedInstanceState?.getIntArray(KEY_CHEAT_INDEX) ?: intArrayOf()
 
-        quizViewModel.currentIndex = currentIndex
+        quizViewModel.setCurrentIndexTo(currentIndex)
         quizViewModel.visStatus = visStatus
         quizViewModel.answered = answered
         quizViewModel.score = score
