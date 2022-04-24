@@ -65,7 +65,16 @@ class CrimeFragment : Fragment() {
     }
 
     private val permLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-
+        when (requestCode) {
+            1 -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    var contactID = getContactID()
+                    dial(contactID)
+                } else {
+                    Toast.makeText(requireContext(), "You denied the permission", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
@@ -169,10 +178,7 @@ class CrimeFragment : Fragment() {
         }
 
         callButton.setOnClickListener {
-            if (crime.suspect.isEmpty()) {
-                Toast.makeText(context, R.string.no_suspect, Toast.LENGTH_SHORT)
-            }
-            var contactID = getContactID(crime.suspect)
+            var contactID = getContactID()
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.READ_CONTACTS), 1)
             } else {
@@ -215,6 +221,7 @@ class CrimeFragment : Fragment() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
     private fun dial(contactID: String?) {
         val cursor = requireActivity().contentResolver.query(
             ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
@@ -230,7 +237,10 @@ class CrimeFragment : Fragment() {
         }
     }
 
-    private fun getContactID(name: String): String? {
+    private fun getContactID(): String? {
+        if (crime.suspect.isEmpty()) {
+            Toast.makeText(context, R.string.no_suspect, Toast.LENGTH_SHORT).show()
+        }
         var id: String? = null
         var cursor = requireActivity().contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI,
