@@ -1,5 +1,6 @@
 package com.yangwenhao.criminalintent
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,8 +18,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import java.util.*
@@ -36,6 +42,7 @@ class CrimeFragment : Fragment() {
     private lateinit var reportButton: Button
     private lateinit var suspectButton: Button
     private lateinit var dateButton: Button
+    private lateinit var callButton: Button
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
 
@@ -55,6 +62,10 @@ class CrimeFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private val permLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+
     }
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
@@ -81,6 +92,7 @@ class CrimeFragment : Fragment() {
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
         reportButton = view.findViewById(R.id.crime_report) as Button
         suspectButton = view.findViewById(R.id.crime_suspect) as Button
+        callButton = view.findViewById(R.id.call_suspect) as Button
         return view
     }
 
@@ -156,6 +168,20 @@ class CrimeFragment : Fragment() {
             }
         }
 
+        callButton.setOnClickListener {
+            if (crime.suspect.isEmpty()) {
+                Toast.makeText(context, R.string.no_suspect, Toast.LENGTH_SHORT)
+            }
+            var contactID = getContactID(crime.suspect)
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.READ_CONTACTS), 1)
+            } else {
+                dial(contactID)
+            }
+
+        }
+
+
         suspectButton.apply {
             val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
             setOnClickListener {
@@ -180,6 +206,43 @@ class CrimeFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         crimeDetailViewModel.saveCrime(crime)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+    private fun dial(contactID: String?) {
+        val cursor = requireActivity().contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+            ContactsContract.CommonDataKinds.Phone.CONTACT_ID +"=?", arrayOf(contactID), null, null)
+        cursor?.use {
+            if (it.count != 0) {
+                it.moveToFirst()
+                val phone = it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                val number: Uri = Uri.parse("tel:$phone")
+                val intent = Intent(Intent.ACTION_DIAL, number)
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun getContactID(name: String): String? {
+        var id: String? = null
+        var cursor = requireActivity().contentResolver.query(
+            ContactsContract.Contacts.CONTENT_URI,
+            arrayOf(ContactsContract.Contacts._ID),
+            ContactsContract.Contacts.DISPLAY_NAME + "=?", arrayOf(name), null);
+        cursor?.use {
+            if (it.count != 0) {
+                it.moveToFirst()
+                id = it.getString(0)
+            }
+        }
+        return id
     }
 
     companion object {
