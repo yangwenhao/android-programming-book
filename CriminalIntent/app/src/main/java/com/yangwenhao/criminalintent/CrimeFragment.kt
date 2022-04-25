@@ -15,10 +15,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
@@ -45,6 +42,8 @@ class CrimeFragment : Fragment() {
     private lateinit var callButton: Button
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
+    private lateinit var photoButton: ImageButton
+    private lateinit var photoView: ImageView
 
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == Activity.RESULT_OK && it.data != null) {
@@ -98,6 +97,8 @@ class CrimeFragment : Fragment() {
         reportButton = view.findViewById(R.id.crime_report) as Button
         suspectButton = view.findViewById(R.id.crime_suspect) as Button
         callButton = view.findViewById(R.id.call_suspect) as Button
+        photoButton = view.findViewById(R.id.crime_camera)
+        photoView = view.findViewById(R.id.crime_photo)
         return view
     }
 
