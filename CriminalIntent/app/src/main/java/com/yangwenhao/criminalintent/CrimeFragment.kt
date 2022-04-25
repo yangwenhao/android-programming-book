@@ -46,7 +46,7 @@ class CrimeFragment : Fragment() {
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
 
-    private val resultLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == Activity.RESULT_OK && it.data != null) {
             val contactUri: Uri? = it.data?.data
             val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
@@ -64,18 +64,15 @@ class CrimeFragment : Fragment() {
         }
     }
 
-    private val permLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        when (requestCode) {
-            1 -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    var contactID = getContactID()
-                    dial(contactID)
-                } else {
-                    Toast.makeText(requireContext(), "You denied the permission", Toast.LENGTH_SHORT).show()
-                }
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            isGranted: Boolean ->
+            if (isGranted) {
+                var contactID = getContactID()
+                dial(contactID)
+            } else {
+                Toast.makeText(requireContext(), "Calling suspect disabled because you denied the permission", Toast.LENGTH_SHORT).show()
             }
         }
-    }
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this).get(CrimeDetailViewModel::class.java)
@@ -87,7 +84,6 @@ class CrimeFragment : Fragment() {
         crime = Crime()
         val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
         crimeDetailViewModel.loadCrime(crimeId)
-
     }
 
     override fun onCreateView(
@@ -142,11 +138,9 @@ class CrimeFragment : Fragment() {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 // left blank
             }
-
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 crime.title = p0.toString()
             }
-
             override fun afterTextChanged(p0: Editable?) {
                 // left blank
             }
@@ -178,15 +172,14 @@ class CrimeFragment : Fragment() {
         }
 
         callButton.setOnClickListener {
-            var contactID = getContactID()
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.READ_CONTACTS), 1)
+                //ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.READ_CONTACTS), 1)
+                requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
             } else {
+                var contactID = getContactID()
                 dial(contactID)
             }
-
         }
-
 
         suspectButton.apply {
             val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
@@ -214,14 +207,6 @@ class CrimeFragment : Fragment() {
         crimeDetailViewModel.saveCrime(crime)
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
     private fun dial(contactID: String?) {
         val cursor = requireActivity().contentResolver.query(
             ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
@@ -245,7 +230,7 @@ class CrimeFragment : Fragment() {
         var cursor = requireActivity().contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI,
             arrayOf(ContactsContract.Contacts._ID),
-            ContactsContract.Contacts.DISPLAY_NAME + "=?", arrayOf(name), null);
+            ContactsContract.Contacts.DISPLAY_NAME + "=?", arrayOf(crime.suspect), null);
         cursor?.use {
             if (it.count != 0) {
                 it.moveToFirst()
