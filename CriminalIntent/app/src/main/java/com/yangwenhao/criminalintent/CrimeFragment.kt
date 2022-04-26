@@ -27,6 +27,7 @@ import java.util.*
 
 private const val ARG_CRIME_ID = "crime_id"
 private const val DIALOG_DATE = "DialogDate"
+private const val DIALOG_PHOTO = "DialogPhoto"
 private const val ARG_DATE = "date"
 private const val REQUEST_KEY = "DialogDate"
 private const val DATE_FORMAT = "EEE, MMM, dd"
@@ -232,6 +233,13 @@ class CrimeFragment : Fragment() {
                 cameraLauncher.launch(captureImage)
             }
         }
+
+        photoView.setOnClickListener {
+            PhotoFragment.newInstance(photoUri).apply {
+                show(this@CrimeFragment.parentFragmentManager, DIALOG_PHOTO)
+            }
+        }
+
         parentFragmentManager.setFragmentResultListener(REQUEST_KEY, viewLifecycleOwner) { requestKey, result ->
             if (requestKey == DIALOG_DATE) {
                 crime.date = result.getSerializable(ARG_DATE) as Date
