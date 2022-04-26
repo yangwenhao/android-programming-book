@@ -76,8 +76,8 @@ class CrimeFragment : Fragment() {
 
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == Activity.RESULT_OK) {
-            requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            updatePhotoView()
+            //requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            //updatePhotoView()
         }
     }
 
@@ -229,7 +229,7 @@ class CrimeFragment : Fragment() {
                 for (cameraActivity in cameraActivities) {
                     requireActivity().grantUriPermission(cameraActivity.activityInfo.packageName, photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 }
-                startActivityForResult(captureImage, 2)
+                cameraLauncher.launch(captureImage)
             }
         }
         parentFragmentManager.setFragmentResultListener(REQUEST_KEY, viewLifecycleOwner) { requestKey, result ->
@@ -247,7 +247,7 @@ class CrimeFragment : Fragment() {
 
     override fun onDetach() {
         super.onDetach()
-        requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        //requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
     }
 
     private fun dial(contactID: String?) {
