@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -90,6 +91,7 @@ class CrimeFragment : Fragment() {
         Log.i(TAG, "onCreate...")
         super.onCreate(savedInstanceState)
         crime = Crime()
+        photoFile = crimeDetailViewModel.getPhotoFile(crime)
         val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
         crimeDetailViewModel.loadCrime(crimeId)
     }
@@ -119,8 +121,14 @@ class CrimeFragment : Fragment() {
                 photoFile = crimeDetailViewModel.getPhotoFile(crime)
                 photoUri = FileProvider.getUriForFile(requireActivity(), "com.yangwenhao.criminalintent.fileprovider", photoFile)
                 updateUI()
+                updatePhotoView(photoView.width, photoView.height)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
     }
 
     private fun updateUI() {
@@ -135,12 +143,12 @@ class CrimeFragment : Fragment() {
         } else if (crime.suspect.isNotEmpty()) {
             suspectButton.text = crime.suspect
         }
-        updatePhotoView()
+        //updatePhotoView()
     }
 
-    private fun updatePhotoView() {
+    private fun updatePhotoView(destWidth: Int, destHeight: Int) {
         if (photoFile.exists()) {
-            val bitmap = getScaledBitmap(photoFile.path, requireActivity())
+            val bitmap = getScaledBitmap(photoFile.path, destWidth, destHeight)
             photoView.setImageBitmap(bitmap)
         } else {
             photoView.setImageDrawable(null)
@@ -239,6 +247,14 @@ class CrimeFragment : Fragment() {
                 show(this@CrimeFragment.parentFragmentManager, DIALOG_PHOTO)
             }
         }
+
+        photoView.viewTreeObserver.addOnGlobalLayoutListener (
+            object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    photoView.viewTreeObserver.removeOnGlobalLayoutListener(this);
+                    updatePhotoView(photoView.width, photoView.height)
+                }
+            });
 
         parentFragmentManager.setFragmentResultListener(REQUEST_KEY, viewLifecycleOwner) { requestKey, result ->
             if (requestKey == DIALOG_DATE) {
