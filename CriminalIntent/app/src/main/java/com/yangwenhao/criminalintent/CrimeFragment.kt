@@ -24,6 +24,8 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import java.io.File
+import java.lang.String.format
+//import java.text.DateFormat
 import java.util.*
 
 private const val ARG_CRIME_ID = "crime_id"
@@ -133,7 +135,7 @@ class CrimeFragment : Fragment() {
 
     private fun updateUI() {
         titleField.setText(crime.title)
-        dateButton.text = crime.date.toString()
+        dateButton.text = DateFormat.getMediumDateFormat(requireContext()).format(crime.date)
         solvedCheckBox.apply {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()
