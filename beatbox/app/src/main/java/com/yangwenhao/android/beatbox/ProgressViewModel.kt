@@ -5,13 +5,14 @@ import androidx.databinding.Bindable
 
 class ProgressViewModel : BaseObservable() {
 
-    private var progressValue: Int = 0
+    @get:Bindable
+    var progress: Int = 0
 
     @get:Bindable
-    val progress: String
-        get() = "Playback Speed ${progressValue}%"
+    val progressText: String
+        get() = "Playback Speed ${progress}%"
 
     fun onProgressChanged(progress: Int) {
-        progressValue = progress
+        this.progress = progress
     }
 }

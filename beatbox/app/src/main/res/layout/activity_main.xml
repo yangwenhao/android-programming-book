@@ -28,13 +28,13 @@
             app:layout_constraintBottom_toTopOf="@+id/seek_bar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:text="@{viewModel.progress}"
+            android:text="@{viewModel.progressText}"
             android:background="@color/white"/>
         <SeekBar
             android:id="@+id/seek_bar"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:progress="0"
+            android:progress="@{viewModel.progress}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
