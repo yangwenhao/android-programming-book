@@ -3,6 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <data>
+        <variable
+            name="viewModel"
+            type="com.yangwenhao.android.beatbox.ProgressViewModel" />
+    </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -22,8 +28,7 @@
             app:layout_constraintBottom_toTopOf="@+id/seek_bar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:text="Playback Speed 0%"
-            android:text="@string/play_back_speed"
+            android:text="@{viewModel.progress}"
             android:background="@color/white"/>
         <SeekBar
             android:id="@+id/seek_bar"
@@ -33,7 +38,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/white"/>
+            android:background="@color/white"
+            android:onProgressChanged="@{(seekBar, progress, fromUser) -> viewModel.onProgressChanged(progress)}"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
