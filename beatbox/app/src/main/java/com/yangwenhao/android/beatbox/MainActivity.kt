@@ -17,6 +17,7 @@ private const val TAG = "MainActivity"
 class MainActivity : AppCompatActivity() {
 
     private lateinit var beatBox: BeatBox
+    private lateinit var progressViewModel: ProgressViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +29,8 @@ class MainActivity : AppCompatActivity() {
             layoutManager = GridLayoutManager(context, 3)
             adapter = SoundAdapter(beatBox.sounds)
         }
-        binding.viewModel
+        progressViewModel = ProgressViewModel(beatBox)
+        binding.viewModel = progressViewModel
     }
 
     override fun onDestroy() {
@@ -39,12 +41,13 @@ class MainActivity : AppCompatActivity() {
     private inner class SoundHolder(private val binding: ListItemSoundBinding): RecyclerView.ViewHolder(binding.root) {
 
         init {
-            binding.viewModel = SoundViewModel(beatBox)
+            binding.soundViewModel = SoundViewModel(beatBox)
+            binding.progressViewModel = this@MainActivity.progressViewModel
         }
 
         fun bind(sound: Sound) {
             binding.apply {
-                viewModel?.sound = sound
+                soundViewModel?.sound = sound
                 executePendingBindings()
             }
         }

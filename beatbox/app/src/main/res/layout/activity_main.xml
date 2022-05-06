@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.yangwenhao.android.beatbox.SoundViewModel" />
+            type="com.yangwenhao.android.beatbox.ProgressViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
