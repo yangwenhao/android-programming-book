@@ -7,6 +7,7 @@ import android.os.Message
 import android.util.Log
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.yangwenhao.android.beatbox.databinding.ActivityMainBinding
@@ -16,33 +17,39 @@ private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var beatBox: BeatBox
+    //private lateinit var beatBox: BeatBox
     private lateinit var progressViewModel: ProgressViewModel
+
+    private val beatBoxViewModel: BeatBoxViewModel by lazy {
+        ViewModelProvider(this).get(BeatBoxViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        beatBox = BeatBox(assets)
+        if (beatBoxViewModel.beatBox == null) {
+            beatBoxViewModel.beatBox = BeatBox(assets)
+        }
 
         val binding: ActivityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         binding.recyclerView.apply {
             layoutManager = GridLayoutManager(context, 3)
-            adapter = SoundAdapter(beatBox.sounds)
+            adapter = SoundAdapter(beatBoxViewModel.beatBox.sounds)
         }
-        progressViewModel = ProgressViewModel(beatBox)
+        progressViewModel = ProgressViewModel(beatBoxViewModel.beatBox)
         binding.viewModel = progressViewModel
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        beatBox.release()
+        //beatBox.release()
     }
 
     private inner class SoundHolder(private val binding: ListItemSoundBinding): RecyclerView.ViewHolder(binding.root) {
 
         init {
-            binding.soundViewModel = SoundViewModel(beatBox)
-            binding.progressViewModel = this@MainActivity.progressViewModel
+            binding.soundViewModel = SoundViewModel(beatBoxViewModel.beatBox)
+            binding.progressViewModel = progressViewModel
         }
 
         fun bind(sound: Sound) {
