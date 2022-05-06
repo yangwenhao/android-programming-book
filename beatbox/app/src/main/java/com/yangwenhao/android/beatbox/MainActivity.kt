@@ -12,27 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.yangwenhao.android.beatbox.databinding.ActivityMainBinding
 import com.yangwenhao.android.beatbox.databinding.ListItemSoundBinding
 
+private const val TAG = "MainActivity"
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var beatBox: BeatBox
-    private val seekbarHandler: Handler = object : Handler(){
-        override fun handleMessage(msg: Message?) {
-            super.handleMessage(msg)
-            when(msg?.what){
-                9999 ->{
-                    try {
-                        var t = msg.data.get("data")
-                        Log.d(TAG, "t="+ t)
-                    } catch (ex : Throwable){
-                        ex.printStackTrace()
-                    }
-                }
-                else -> {
-                    Log.d(TAG, "handler else")
-                }
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,11 +64,4 @@ class MainActivity : AppCompatActivity() {
         override fun getItemCount() = sounds.size
     }
 
-    private inner class SeekbarThread() : Thread() {
-        override fun run() {
-            val message: Message = Message()
-            message.what = 1
-            seekbarHandler.sendMessage(message)
-        }
-    }
 }
