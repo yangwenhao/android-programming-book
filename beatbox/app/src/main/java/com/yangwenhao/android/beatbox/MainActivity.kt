@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
             layoutManager = GridLayoutManager(context, 3)
             adapter = SoundAdapter(beatBox.sounds)
         }
+        binding.viewModel
     }
 
     override fun onDestroy() {

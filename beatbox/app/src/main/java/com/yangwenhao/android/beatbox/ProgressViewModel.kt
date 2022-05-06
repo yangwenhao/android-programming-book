@@ -5,15 +5,15 @@ import androidx.databinding.Bindable
 
 class ProgressViewModel(private val beatBox: BeatBox) : BaseObservable() {
 
-    @get:Bindable
-    var progress: Int = 0
+    var rate: Float = 0f
 
     @get:Bindable
     val progressText: String
-        get() = "Playback Speed ${progress}%"
+        get() = "Playback Speed ${rate}%"
 
     fun onProgressChanged(progress: Int) {
-        this.progress = progress
-
+        rate = 0.5f + (2 - 0.5f) * progress / 100
+        beatBox.setRate(rate)
+        notifyChange()
     }
 }

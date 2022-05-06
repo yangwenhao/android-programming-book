@@ -15,6 +15,7 @@ class BeatBox(private val assets: AssetManager) {
 
     val sounds: List<Sound>
     private val soundPool = SoundPool.Builder().setMaxStreams(MAX_SOUNDS).build()
+    private var streamId: Int = 0
 
     init {
         sounds = loadSounds()
@@ -22,8 +23,13 @@ class BeatBox(private val assets: AssetManager) {
 
     fun play(sound: Sound) {
         sound.soundId?.let {
-            soundPool.play(it, 1.0f, 1.0f, 1, 0, 1.0f)
+            streamId = soundPool.play(it, 1.0f, 1.0f, 1, 0, 1.0f)
         }
+    }
+
+
+    fun setRate(rate: Float) {
+        soundPool.setRate(streamId, rate)
     }
 
     fun release() {
