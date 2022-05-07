@@ -2,9 +2,6 @@ package com.yangwenhao.android.beatbox
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Message
-import android.util.Log
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -17,38 +14,43 @@ private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
-    //private lateinit var beatBox: BeatBox
+    private lateinit var beatBox: BeatBox
     private lateinit var progressViewModel: ProgressViewModel
 
-    private val beatBoxViewModel: BeatBoxViewModel by lazy {
-        ViewModelProvider(this).get(BeatBoxViewModel::class.java)
+    private val jetpackViewModel: JetpackViewModel by lazy {
+        ViewModelProvider(this).get(JetpackViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (beatBoxViewModel.beatBox == null) {
-            beatBoxViewModel.beatBox = BeatBox(assets)
+        if (jetpackViewModel.beatBox == null) {
+            jetpackViewModel.beatBox = BeatBox(assets)
         }
+        beatBox = jetpackViewModel.beatBox!!
+        if (jetpackViewModel.progressViewModel == null) {
+            jetpackViewModel.progressViewModel = ProgressViewModel(beatBox)
+        }
+        progressViewModel = jetpackViewModel.progressViewModel!!
 
         val binding: ActivityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         binding.recyclerView.apply {
             layoutManager = GridLayoutManager(context, 3)
-            adapter = SoundAdapter(beatBoxViewModel.beatBox.sounds)
+            adapter = SoundAdapter(beatBox.sounds)
         }
-        progressViewModel = ProgressViewModel(beatBoxViewModel.beatBox)
         binding.viewModel = progressViewModel
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        // 不能释放资源，否则翻转屏幕会停止播放声音
         //beatBox.release()
     }
 
     private inner class SoundHolder(private val binding: ListItemSoundBinding): RecyclerView.ViewHolder(binding.root) {
 
         init {
-            binding.soundViewModel = SoundViewModel(beatBoxViewModel.beatBox)
+            binding.soundViewModel = SoundViewModel(beatBox)
             binding.progressViewModel = progressViewModel
         }
 
