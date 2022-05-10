@@ -9,12 +9,16 @@
             name="progressViewModel"
             type="com.yangwenhao.android.beatbox.ProgressViewModel" />
     </data>
-    <Button
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:onClick="@{() -> soundViewModel.onButtonClicked(progressViewModel) }"
-        android:text="@{soundViewModel.title}"
-        tools:text="Sound name"/>
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:onClick="@{() -> soundViewModel.onButtonClicked(progressViewModel) }"
+            android:text="@{soundViewModel.title}"
+            tools:text="Sound name"/>
+    </FrameLayout>
 </layout>
