@@ -17,7 +17,8 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_marginBottom="70dp"/>
 
         <TextView
             android:id="@+id/seek_bar_text_view"
@@ -29,6 +30,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:text="@{viewModel.progressText}"
+            android:textColor="@color/dark_blue"
             android:background="@color/white"/>
         <SeekBar
             android:id="@+id/seek_bar"
