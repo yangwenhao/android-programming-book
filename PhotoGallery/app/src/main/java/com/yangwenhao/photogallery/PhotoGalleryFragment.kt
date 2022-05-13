@@ -24,7 +24,7 @@ class PhotoGalleryFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val retrofit = Retrofit.Builder().baseUrl("https://www.flickr.com/").addConverterFactory(ScalarsConverterFactory.create()).build()
+        val retrofit = Retrofit.Builder().baseUrl("https://image.baidu.com/").addConverterFactory(ScalarsConverterFactory.create()).build()
         val flickrApi = retrofit.create(FlickrApi::class.java)
         val flickrHomePageRequest = flickrApi.fetchContents()
 
