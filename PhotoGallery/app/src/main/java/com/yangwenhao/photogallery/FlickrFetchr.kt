@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.yangwenhao.photogallery.api.FlickrApi
 import com.yangwenhao.photogallery.api.FlickrResponse
+import com.yangwenhao.photogallery.api.PhotoResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,10 +30,17 @@ class FlickrFetchr {
         val flickrRequest: Call<FlickrResponse> = flickrApi.fetchPhotos()
 
         flickrRequest.enqueue(object : Callback<FlickrResponse> {
+
             override fun onResponse(call: Call<FlickrResponse>, response: Response<FlickrResponse>) {
                 Log.d(TAG, "Response recevied")
 
-                responseLiveData.value = response.body()
+                val flickrResponse: FlickrResponse? = response.body()
+                val photoResponse: PhotoResponse? = flickrResponse?.photos
+                var galleryItems: List<GalleryItem> = photoResponse?.galleryItems ?: mutableListOf()
+                galleryItems = galleryItems.filterNot {
+                    it.url.isBlank()
+                }
+                responseLiveData.value = galleryItems
             }
 
             override fun onFailure(call: Call<FlickrResponse>, t: Throwable) {
