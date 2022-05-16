@@ -11,4 +11,5 @@ class PhotoGalleryViewModel : ViewModel() {
         galleryItemLiveData = FlickrFetchr().fetchPhotos()
     }
 
+
 }
