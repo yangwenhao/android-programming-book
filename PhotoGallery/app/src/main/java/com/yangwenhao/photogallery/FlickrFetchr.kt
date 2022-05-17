@@ -18,6 +18,7 @@ private const val TAG = "FlickrFetchr"
 class FlickrFetchr {
 
     private val flickrApi: FlickrApi
+    private lateinit var flickrRequest: Call<FlickrResponse>
 
     init {
         val retrofit = Retrofit.Builder().baseUrl("https://www.api.flickr.com/").addConverterFactory(
@@ -27,7 +28,7 @@ class FlickrFetchr {
 
     fun fetchPhotos(): LiveData<List<GalleryItem>> {
         val responseLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
-        val flickrRequest: Call<FlickrResponse> = flickrApi.fetchPhotos()
+        flickrRequest = flickrApi.fetchPhotos()
 
         flickrRequest.enqueue(object : Callback<FlickrResponse> {
 
@@ -44,11 +45,21 @@ class FlickrFetchr {
             }
 
             override fun onFailure(call: Call<FlickrResponse>, t: Throwable) {
-                Log.e(TAG, "Failed to fetch photos", t)
+                if (call.isCanceled) {
+                    Log.d(TAG, "Call is cancelled")
+                } else {
+                    Log.e(TAG, "Failed to fetch photos", t)
+                }
             }
 
         })
 
         return responseLiveData
+    }
+
+    fun cancelRequestInFlight() {
+        if (::flickrRequest.isInitialized) {
+            flickrRequest.cancel()
+        }
     }
 }
