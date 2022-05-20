@@ -18,6 +18,7 @@ private const val MESSAGE_DOWNLOAD = 0
 class ThumbnailDownloader<in T>(private val responseHandler: Handler, private val onThumbnailDownloaded: (T, Bitmap) -> Unit) : HandlerThread(TAG) {
 
     val fragmentLifecycleObserver: LifecycleObserver = object : LifecycleObserver {
+
         @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
         fun setup() {
             Log.i(TAG, "Starting background thread")
@@ -28,6 +29,7 @@ class ThumbnailDownloader<in T>(private val responseHandler: Handler, private va
         @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         fun tearDown() {
             Log.i(TAG, "Destroying background thread")
+            lifecycle.removeObserver(this)
             quit()
         }
     }
@@ -47,6 +49,18 @@ class ThumbnailDownloader<in T>(private val responseHandler: Handler, private va
     private lateinit var requestHandler: Handler
     private val requestMap = ConcurrentHashMap<T, String>()
     private val flickrFetchr = FlickrFetchr()
+    private lateinit var lifecycle: Lifecycle
+
+    fun observe(lifecycle: Lifecycle) {
+        this.lifecycle = lifecycle
+        lifecycle.addObserver(this.fragmentLifecycleObserver)
+    }
+
+    fun clearQueue() {
+        Log.i(TAG, "Clearing all requests from queue")
+        requestHandler.removeMessages(MESSAGE_DOWNLOAD)
+        requestMap.clear()
+    }
 
     @Suppress("UNCHECKED_CAST")
     @SuppressLint("HandlerLeak")

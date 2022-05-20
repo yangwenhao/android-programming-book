@@ -19,6 +19,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 import com.yangwenhao.photogallery.api.FlickrApi
 import retrofit2.Call
 import retrofit2.Callback
@@ -31,7 +32,7 @@ private const val TAG = "PhotoGalleryFragment"
 class PhotoGalleryFragment : Fragment() {
 
     private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
-    private  lateinit var photoRecyclerView: RecyclerView
+    private lateinit var photoRecyclerView: RecyclerView
     private lateinit var thumbnailDownloader: ThumbnailDownloader<PhotoHolder>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,12 +40,18 @@ class PhotoGalleryFragment : Fragment() {
         retainInstance = true
         photoGalleryViewModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
 
+
         val responseHandler = Handler(Looper.myLooper()!!)
         thumbnailDownloader = ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
             val drawable = BitmapDrawable(resources, bitmap)
             photoHolder.bindDrawable(drawable)
         }
-        lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
+        //lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
+        thumbnailDownloader.observe(lifecycle)
+
+         viewLifecycleOwnerLiveData.observe(this) {
+            it.lifecycle.addObserver(thumbnailDownloader.viewLifecycleObserver)
+        }
     }
 
     override fun onCreateView(
@@ -52,7 +59,6 @@ class PhotoGalleryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        viewLifecycleOwner.lifecycle.addObserver(thumbnailDownloader.viewLifecycleObserver)
         val view = inflater.inflate(R.layout.fragment_photo_gallery, container, false)
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view)
         photoRecyclerView.layoutManager = GridLayoutManager(context, 3)
@@ -64,20 +70,29 @@ class PhotoGalleryFragment : Fragment() {
         photoGalleryViewModel.galleryItemLiveData.observe(viewLifecycleOwner) {
             photoRecyclerView.adapter = PhotoAdapter(it)
         }
+
+
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewLifecycleOwner.lifecycle.removeObserver(thumbnailDownloader.viewLifecycleObserver)
+        //viewLifecycleOwner.lifecycle.removeObserver(thumbnailDownloader.viewLifecycleObserver)
+        thumbnailDownloader.clearQueue()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        lifecycle.removeObserver(thumbnailDownloader.fragmentLifecycleObserver)
+//        lifecycle.removeObserver(
+//            thumbnailDownloader
+//        )
     }
 
     private class PhotoHolder(private val itemImageView: ImageView) : RecyclerView.ViewHolder(itemImageView) {
         val bindDrawable: (Drawable) -> Unit = itemImageView::setImageDrawable
+
+        fun bindGalleryItem(galleryItem: GalleryItem) {
+            Picasso.get().load(galleryItem.url).placeholder(R.drawable.bill_up_close).into(itemImageView)
+        }
     }
 
     private inner class PhotoAdapter(private val galleryItems: List<GalleryItem>) : RecyclerView.Adapter<PhotoHolder>() {
@@ -88,9 +103,10 @@ class PhotoGalleryFragment : Fragment() {
 
         override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
             val galleryItem = galleryItems[position]
-            val placeholder: Drawable = ContextCompat.getDrawable(requireContext(), R.drawable.bill_up_close) ?: ColorDrawable()
-            holder.bindDrawable(placeholder)
-            thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
+            holder.bindGalleryItem(galleryItem)
+//            val placeholder: Drawable = ContextCompat.getDrawable(requireContext(), R.drawable.bill_up_close) ?: ColorDrawable()
+//            holder.bindDrawable(placeholder)
+//            thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
         }
 
         override fun getItemCount(): Int = galleryItems.size
